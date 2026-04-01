@@ -1,0 +1,19 @@
+   51  mkdir meu-projeto-ci
+   52  cd meu-projeto-ci
+   75  git init
+   76  touch README.md
+   77  git add README.md
+   78  git commit -m "Commit inicial"
+   79  mkdir -p .github/workflows
+   80  echo -e 'name: Hello Local\non: [push, workflow_dispatch]\njobs:\n  teste-basico:\n    runs-on: ubuntu-latest\n    steps:\n      - run: echo "Iniciando testes locais"\n      - run: node -v\n      - run: echo "Finalizado com sucesso!"' > .github/workflows/01-hello-local.yml
+   81  act -W .github/workflows/01-hello-local.yml | grep "|"
+   82  act -W .github/workflows/01-hello-local.yml
+   83  act -l
+   85  echo -e 'name: Pipeline Principal\non: push\njobs:\n  setup-e-lint:\n    runs-on: ubuntu-latest\n    steps:\n      - run: echo "Analisando qualidade do código..."\n  testes-unitarios:\n    needs: setup-e-lint\n    runs-on: ubuntu-latest\n    steps:\n      - run: echo "Rodando testes unitários..."\n  scan-de-seguranca:\n    needs: setup-e-lint\n    runs-on: ubuntu-latest\n    steps:\n      - run: echo "Procurando vulnerabilidades..."\n  build-e-deploy:\n    needs: [testes-unitarios, scan-de-seguranca]\n    runs-on: ubuntu-latest\n    steps:\n      - run: echo "Gerando artefato e fazendo deploy..."' > .github/workflows/02-pipeline-principal.yml
+   86  act -n
+   87  act -l
+   88  act -W .github/workflows/02-pipeline-principal.yml -P ubuntu-latest=node:slim
+   89  act -j scan-de-seguranca
+   90  git add .
+   91  git commit -m "Commit 02"
+   92  history 50 > comandos.txt
